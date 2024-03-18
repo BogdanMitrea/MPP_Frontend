@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { PhoneModel } from './phone-model';
+import { Console } from 'console';
 
 @Injectable({
   providedIn: 'root'
@@ -8,9 +9,9 @@ export class PhoneService {
   protected phoneModelsList: PhoneModel[]=[
     {
       id: 1,
-      name: "iPhone 13",
+      name: "iPhone 15",
       producer: "Apple",
-      year: 2021,
+      year: 2023,
       color: "Black",
       memory: 128,
       photo: "./assets/iphone13.jpg"
@@ -26,12 +27,12 @@ export class PhoneService {
   },
   {
       id: 3,
-      name: "Pixel 6",
-      producer: "Google",
-      year: 2021,
-      color: "Sorta Sage",
+      name: "Huawei P50",
+      producer: "Huawei",
+      year: 2022,
+      color: "Blue",
       memory: 128,
-      photo:"./assets/pixel6.jpg"
+      photo:"./assets/huaweip50.jpg"
   },
   {
       id: 4,
@@ -60,5 +61,35 @@ export class PhoneService {
 
   getPhoneById(id:number): PhoneModel | undefined{
     return this.phoneModelsList.find(PhoneModel => PhoneModel.id===id);
+  }
+  AddNewPhone(phonename:string,producer:string,yearOfRelease:string,color:string,phonememory:string,chosenphoto:string){
+      this.phoneModelsList.push({id: this.phoneModelsList.length+1,
+        name: phonename,
+        producer: producer,
+        year: Number(yearOfRelease),
+        color: color,
+        memory: Number(phonememory),
+        photo:chosenphoto})
+  }
+
+  deletePhone(phoneModelId:number){
+    const index = this.phoneModelsList.findIndex(item => item.id === phoneModelId);
+    if (index !== -1) {
+      this.phoneModelsList.splice(index, 1);
+    }
+  }
+
+  updatePhone(phoneModelId:number, phonename:string,producer:string,yearOfRelease:string,color:string,phonememory:string,chosenphoto:string){
+    const index = this.phoneModelsList.findIndex(item => item.id === phoneModelId);
+    if (index !== -1) {
+        this.phoneModelsList[index].name = phonename;
+        this.phoneModelsList[index].producer = producer;
+        this.phoneModelsList[index].year = Number(yearOfRelease);
+        this.phoneModelsList[index].color = color;
+        this.phoneModelsList[index].memory = Number(phonememory);
+        this.phoneModelsList[index].photo = chosenphoto;
+    } else {
+        console.error('Phone model not found for update');
+    }
   }
 }

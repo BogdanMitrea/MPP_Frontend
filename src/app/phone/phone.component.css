@@ -1,0 +1,47 @@
+.maindiv{
+    display: grid;
+    grid-template-columns: 4fr 1fr;
+    grid-gap: 20px;
+}
+.Results{
+    padding: 20px;
+    background-color: lightblue;
+    border-radius: 50px;
+}
+
+.crudforms{
+    padding: 20px;
+    background-color: lightblue;
+    border-radius: 50px;
+}
+
+.managebuttons{
+    margin-right: 10px;
+    margin-left: 10px;
+    margin-bottom: 100px;
+    background-color    : rgb(241, 241, 142);
+    color: black;
+    border-radius: 5px;
+    height: 50px;
+}
+
+.managebuttons:hover{
+   cursor: pointer;
+}
+
+
+.crudlabel{
+    font-size: 24px;
+}
+
+.savebutton{
+    width: 150px;
+    height: 25px;
+    background-color: lightgreen;
+    border-radius: 20px;
+}
+
+.savebutton:enabled:hover{
+    cursor:pointer ;
+    background-color: green;
+}

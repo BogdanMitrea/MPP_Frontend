@@ -1,5 +1,38 @@
-<section class="listing">
-    <h2 class="listheading">{{PhoneModel.name}}</h2>
-    <p class="producercedetails">Producer: {{PhoneModel.producer}}</p>
-    <p class="detailspage" [routerLink]="['/details',PhoneModel.id]">View Details</p>
-</section>
+<div class="displayAndDelete">
+    <div *ngIf="!showForm" class="listing">
+        <h2 class="listheading">{{PhoneModel.name}}</h2>
+        <p class="producerdetails">Producer: {{PhoneModel.producer}}</p>
+        <p class="detailspage" [routerLink]="['/details',PhoneModel.id]">View Details</p>
+    </div>
+    <div *ngIf="showForm" class="formlisting">
+        <form [formGroup]="updateform" (submit)="updatePhone(PhoneModel.id)">
+            <div class="updatetable">
+                <table>
+                    <tr>
+                    <td> <label class="crudlabel" for="phoneNameInput">Phone Name: </label></td>
+                    <td><input id="phoneNameInput" type="text" placeholder={{PhoneModel.name}} formControlName="newname" required></td></tr>
+                    <tr>
+                        <td><label class="crudlabel" for="producerInput">Producer: </label></td>
+                        <td><input id="producerInput" type="text" placeholder={{PhoneModel.producer}} formControlName="producer" required></td></tr>
+                    <tr>
+                        <td><label class="crudlabel" for="yearInput">Year of Release: </label></td>
+                        <td><input id="yearInput" type="number" placeholder={{PhoneModel.year}} formControlName="yearOfRelease" required></td></tr>
+                    <tr>
+                        <td><label class="crudlabel" for="colorInput">Color: </label></td>
+                        <td><input id="colorInput" type="text" placeholder={{PhoneModel.color}} formControlName="color" required></td></tr>
+                    <tr>
+                        <td><label class="crudlabel" for="memoryInput">Memory: </label></td>
+                        <td><input id="memoryInput" type="number" placeholder={{PhoneModel.memory}} formControlName="phonememory" required></td></tr>
+                    <tr>
+                        <td><label class="crudlabel" for="photoInput">Photo: </label></td>
+                        <td><input id="photoInput" type="text" placeholder={{PhoneModel.photo}} formControlName="chosenphoto"></td></tr>
+                </table>
+                <button type="submit" [disabled]="!updateform.valid" class="savebutton">Save Phone</button>
+            </div>
+        </form>
+    </div>
+    <div class="modifybuttons">
+        <div class="deleteEntry"><button type="submit" class="deletebutton" (click)="deleteEntry(PhoneModel.id)">Delete</button></div>
+        <div class="updateEntry"><button type="submit" class="updatebutton" (click)="updateEntryButton(PhoneModel.id)">Update</button></div>
+    </div>
+</div>

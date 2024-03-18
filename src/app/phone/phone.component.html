@@ -1,4 +1,40 @@
 <h1>List of all the phones:</h1>
-<section class="Results">
-    <app-phone-model *ngFor="let phonemodel of phoneModelList" [PhoneModel]="phonemodel"></app-phone-model>
-</section>
+<br>
+<div class="maindiv">
+    <section class="Results">
+        <app-phone-model *ngFor="let phonemodel of phoneModelList" [PhoneModel]="phonemodel"></app-phone-model>
+    </section>
+    <section class="crudforms" >
+        <div >
+            <button class="managebuttons" (click)="toggleFormVisibility()">Add a new phone</button>
+        </div>
+        <br>
+        <div *ngIf="showForm">
+            <form [formGroup]="crudform" (submit)="AddNewPhone()">
+                <div class="crudtable">
+                    <table>
+                        <tr>
+                        <td> <label class="crudlabel" for="phoneNameInput">Phone Name: </label></td>
+                        <td><input id="phoneNameInput" type="text" formControlName="phonename" required></td></tr>
+                        <tr>
+                            <td><label class="crudlabel" for="producerInput">Producer: </label></td>
+                            <td><input id="producerInput" type="text" formControlName="producer" required></td></tr>
+                        <tr>
+                            <td><label class="crudlabel" for="yearInput">Year of Release: </label></td>
+                            <td><input id="yearInput" type="number" formControlName="yearOfRelease" required></td></tr>
+                        <tr>
+                            <td><label class="crudlabel" for="colorInput">Color: </label></td>
+                            <td><input id="colorInput" type="text" formControlName="color" required></td></tr>
+                        <tr>
+                            <td><label class="crudlabel" for="memoryInput">Memory: </label></td>
+                            <td><input id="memoryInput" type="number" formControlName="phonememory" required></td></tr>
+                        <tr>
+                            <td><label class="crudlabel" for="photoInput">Photo: </label></td>
+                            <td><input id="photoInput" type="text" formControlName="chosenphoto"></td></tr>
+                    </table>
+                    <button type="submit" [disabled]="!crudform.valid" class="savebutton">Save Phone</button>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
