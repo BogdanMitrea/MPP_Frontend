@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { PhoneModelComponent } from '../phone-model/phone-model.component';
 import { PhoneModel } from '../phone-model';
 import { CommonModule } from '@angular/common';
 import { PhoneService } from '../phone.service';
+import Chart from 'chart.js/auto';
 import { FormControl,FormGroup,ReactiveFormsModule } from '@angular/forms';
 
 @Component({
@@ -13,8 +14,35 @@ import { FormControl,FormGroup,ReactiveFormsModule } from '@angular/forms';
   styleUrl: './phone.component.css'
 })
 export class PhoneComponent {
-  phoneModelList: PhoneModel[]=[];
   phoneService: PhoneService = inject(PhoneService);
+  chart: any;
+  ngOnInit() {
+    this.createChart();
+  }
+  createChart() {
+    const ctx = document.getElementById('myChart') as HTMLCanvasElement;
+    this.chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: this.phoneService.getAllPhonesNames(),
+        datasets: [{
+          label: 'Memory',
+          data: this.phoneService.getAllPhones().map(phone => phone.memory),
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
+  slicingindex:number=0;
+  phoneModelList: PhoneModel[]=[];
+  slicedPhoneModelList: PhoneModel[]=[];
   showForm: boolean = false;
   crudform = new FormGroup({
     phonename: new FormControl(''),
@@ -24,9 +52,15 @@ export class PhoneComponent {
     phonememory: new FormControl(''),
     chosenphoto: new FormControl(''),
   });
+  sorttype:boolean = false;
 
   toggleFormVisibility() {
     this.showForm = !this.showForm;
+  }
+
+  sortelements(){
+    this.sorttype=!this.sorttype;
+    this.phoneService.sortelements(this.sorttype);
   }
 
   constructor(){
@@ -34,6 +68,7 @@ export class PhoneComponent {
   }
 
   AddNewPhone(){
+    this.showForm = false;
     this.phoneService.AddNewPhone(
       this.crudform.value.phonename ?? '',
       this.crudform.value.producer ?? '',
@@ -42,5 +77,22 @@ export class PhoneComponent {
       this.crudform.value.phonememory ?? '',
       this.crudform.value.chosenphoto ?? '',
     )
+    // this.showchartdata();
+  }
+
+
+  showchartdata(){
+    this.chart.destroy();
+    this.createChart();
+    this.chart.update();
+  }
+
+
+  decIndex(){
+    this.slicingindex--;
+  }
+
+  incIndex(){
+    this.slicingindex++;
   }
 }

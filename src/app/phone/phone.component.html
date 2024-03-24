@@ -2,11 +2,41 @@
 <br>
 <div class="maindiv">
     <section class="Results">
-        <app-phone-model *ngFor="let phonemodel of phoneModelList" [PhoneModel]="phonemodel"></app-phone-model>
+        <div class="controlsdiv">
+            <div>
+                <button type="submit" class="sortbutton" (click)="sortelements()">
+                    <img src="https://cdn-icons-png.flaticon.com/128/2223/2223723.png" alt="sort">
+                </button>
+            </div>
+            
+        </div>
+        <!-- <app-phone-model *ngFor="let phonemodel of phoneModelList" [PhoneModel]="phonemodel"></app-phone-model> -->
+        <app-phone-model *ngFor="let phonemodel of phoneModelList.slice(slicingindex*5,5+slicingindex*5)" [PhoneModel]="phonemodel"></app-phone-model>
+        <div class="pagingdiv">
+            <div *ngIf="slicingindex>0" class="nextindexarrow">
+                <button type="submit" class="pagingbutton" (click)="decIndex()">
+                    <img src="https://cdn-icons-png.flaticon.com/128/271/271220.png" alt="left">
+                </button>
+            </div>
+            <div *ngIf="slicingindex>0" class="nextindex" (click)="decIndex()">
+                {{slicingindex}}
+            </div>
+            <div class="currentindex">
+                {{slicingindex+1}}
+            </div>
+            <div *ngIf="phoneService.getAllPhones().length/5>slicingindex+1" class="nextindex" (click)="incIndex()">
+                {{slicingindex+2}}
+            </div>
+            <div *ngIf="phoneService.getAllPhones().length/5>slicingindex+1" class="nextindexarrow">
+                <button type="submit" class="pagingbutton" (click)="incIndex()">
+                    <img src="https://cdn-icons-png.flaticon.com/128/271/271228.png" alt="right">
+                </button>
+            </div>
+        </div>
     </section>
     <section class="crudforms" >
-        <div >
-            <button class="managebuttons" (click)="toggleFormVisibility()">Add a new phone</button>
+        <div class="managebuttons">
+            <button class="addbutton" (click)="toggleFormVisibility()">Add a new phone</button>
         </div>
         <br>
         <div *ngIf="showForm">
@@ -35,6 +65,16 @@
                     <button type="submit" [disabled]="!crudform.valid" class="savebutton">Save Phone</button>
                 </div>
             </form>
+        </div>
+        <div class="chartandbutton">
+            <div class="chartbuttondiv">
+                <button type="submit" class="chartbutton" (click)="showchartdata()">
+                    <img src="https://cdn-icons-png.flaticon.com/128/9311/9311549.png" alt="chart">
+                </button>
+            </div>
+            <div class="chartdiv">
+                <canvas id="myChart"></canvas>
+            </div>
         </div>
     </section>
 </div>

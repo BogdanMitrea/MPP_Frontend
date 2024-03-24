@@ -59,11 +59,27 @@ export class PhoneService {
     return this.phoneModelsList;
   }
 
+  getAllPhonesNames(): String[] {
+    return this.phoneModelsList.map(phone => phone.name);
+  }
+
   getPhoneById(id:number): PhoneModel | undefined{
     return this.phoneModelsList.find(PhoneModel => PhoneModel.id===id);
   }
+
+  getMaxId(): number {
+    let maxId = 0;
+    for (const element of this.phoneModelsList) {
+      if (element.id > maxId) {
+        maxId = element.id;
+      }
+    }
+    return maxId;
+  }
+
   AddNewPhone(phonename:string,producer:string,yearOfRelease:string,color:string,phonememory:string,chosenphoto:string){
-      this.phoneModelsList.push({id: this.phoneModelsList.length+1,
+
+      this.phoneModelsList.push({id: this.getMaxId()+1,
         name: phonename,
         producer: producer,
         year: Number(yearOfRelease),
@@ -91,5 +107,17 @@ export class PhoneService {
     } else {
         console.error('Phone model not found for update');
     }
+  }
+
+  sortelements(sorttype:boolean){
+    // if(sorttype)
+    //   this.phoneModelsList=this.phoneModelsList.sort((a,b)=> b.year-a.year);
+    // else
+    // this.phoneModelsList=this.phoneModelsList.sort((a,b)=> a.year-b.year);
+
+    if(sorttype)
+      this.phoneModelsList=this.phoneModelsList.sort((a,b)=> b.name.localeCompare(a.name));
+    else
+    this.phoneModelsList=this.phoneModelsList.sort((a,b)=>  a.name.localeCompare(b.name));
   }
 }
