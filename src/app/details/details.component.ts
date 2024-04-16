@@ -18,6 +18,8 @@ export class DetailsComponent {
 
   constructor(){
     const phoneModelId=Number(this.route.snapshot.params['id'])
-    this.phoneModel=this.phoneService.getPhoneById(phoneModelId);
+    this.phoneService.getPhoneById(phoneModelId).then((phoneModel)=>{
+      this.phoneModel=phoneModel;
+    })
   }
 }

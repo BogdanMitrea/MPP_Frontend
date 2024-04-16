@@ -11,7 +11,10 @@
             
         </div>
         <!-- <app-phone-model *ngFor="let phonemodel of phoneModelList" [PhoneModel]="phonemodel"></app-phone-model> -->
-        <app-phone-model *ngFor="let phonemodel of phoneModelList.slice(slicingindex*5,5+slicingindex*5)" [PhoneModel]="phonemodel"></app-phone-model>
+        <!-- <app-phone-model *ngFor="let phonemodel of phoneModelList.slice(slicingindex*5,5+slicingindex*5)" [PhoneModel]="phonemodel"></app-phone-model> -->
+        <ng-container *ngIf="(phoneModelList | async) as phones">
+            <app-phone-model *ngFor="let phonemodel of phones.slice(slicingindex * 5, 5 + slicingindex * 5)" [PhoneModel]="phonemodel" (phoneModelDeleted)="onPhoneModelDeleted()"></app-phone-model>
+        </ng-container>
         <div class="pagingdiv">
             <div *ngIf="slicingindex>0" class="nextindexarrow">
                 <button type="submit" class="pagingbutton" (click)="decIndex()">
@@ -24,10 +27,10 @@
             <div class="currentindex">
                 {{slicingindex+1}}
             </div>
-            <div *ngIf="phoneService.getAllPhones().length/5>slicingindex+1" class="nextindex" (click)="incIndex()">
+            <div *ngIf="phoneService.getPhonesList().length/5>slicingindex+1" class="nextindex" (click)="incIndex()">
                 {{slicingindex+2}}
             </div>
-            <div *ngIf="phoneService.getAllPhones().length/5>slicingindex+1" class="nextindexarrow">
+            <div *ngIf="phoneService.getPhonesList().length/5>slicingindex+1" class="nextindexarrow">
                 <button type="submit" class="pagingbutton" (click)="incIndex()">
                     <img src="https://cdn-icons-png.flaticon.com/128/271/271228.png" alt="right">
                 </button>

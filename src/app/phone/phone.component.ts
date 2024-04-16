@@ -1,10 +1,11 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit,  ChangeDetectorRef } from '@angular/core';
 import { PhoneModelComponent } from '../phone-model/phone-model.component';
 import { PhoneModel } from '../phone-model';
 import { CommonModule } from '@angular/common';
 import { PhoneService } from '../phone.service';
 import Chart from 'chart.js/auto';
 import { FormControl,FormGroup,ReactiveFormsModule } from '@angular/forms';
+import { Observable, of } from 'rxjs';
 
 @Component({
   selector: 'app-phone',
@@ -15,9 +16,11 @@ import { FormControl,FormGroup,ReactiveFormsModule } from '@angular/forms';
 })
 export class PhoneComponent {
   phoneService: PhoneService = inject(PhoneService);
+  alertrequest: Boolean = false;
+  private socket: WebSocket;
   chart: any;
   ngOnInit() {
-    this.createChart();
+    
   }
   createChart() {
     const ctx = document.getElementById('myChart') as HTMLCanvasElement;
@@ -27,7 +30,7 @@ export class PhoneComponent {
         labels: this.phoneService.getAllPhonesNames(),
         datasets: [{
           label: 'Memory',
-          data: this.phoneService.getAllPhones().map(phone => phone.memory),
+          data: this.phoneService.getPhonesList().map(phone => phone.memory),
           borderWidth: 1
         }]
       },
@@ -41,8 +44,8 @@ export class PhoneComponent {
     });
   }
   slicingindex:number=0;
-  phoneModelList: PhoneModel[]=[];
-  slicedPhoneModelList: PhoneModel[]=[];
+  // phoneModelList: PhoneModel[]=[];
+  phoneModelList: Observable<PhoneModel[]>=of([]);
   showForm: boolean = false;
   crudform = new FormGroup({
     phonename: new FormControl(''),
@@ -53,7 +56,7 @@ export class PhoneComponent {
     chosenphoto: new FormControl(''),
   });
   sorttype:boolean = false;
-
+  isConnected: boolean=true;
   toggleFormVisibility() {
     this.showForm = !this.showForm;
   }
@@ -63,8 +66,89 @@ export class PhoneComponent {
     this.phoneService.sortelements(this.sorttype);
   }
 
+  
+
   constructor(){
-    this.phoneModelList=this.phoneService.getAllPhones();
+    if (!navigator.onLine) {
+      this.showAlert("No internet connection available.");
+    }
+    // this.phoneService.getAllPhones().then((phones:PhoneModel[]) =>{
+    // this.phoneModelList=phones;
+    // this.createChart();
+    // this.phoneService.updateServiceList(phones);}).catch(error => {
+    //   this.showAlert("Error fetching data from the backend. Please try again later.");
+
+    //   this.alertrequest = true;
+    //   });;
+
+
+    // this.phoneService.getAllPhones2().subscribe(
+    //   (phones: PhoneModel[]) => {
+    //     this.phoneModelList = phones;
+    //     this.createChart();
+    //     //this.phoneService.updateServiceList(phones);
+    //   },
+    //   () => {
+    //     console.error('Error fetching phones:');
+    //   }
+    // );
+    this.phoneService.checkInternetConnection().subscribe((connected:boolean) => {
+      this.isConnected = connected;
+      if (this.isConnected) {
+        console.log('Internet connection is available.');
+        this.phoneModelList=this.phoneService.getAllPhones2();
+       this.phoneModelList.subscribe(
+        (phoneslist: PhoneModel[]) => {
+        this.phoneService.updateServiceList(phoneslist);
+        this.createChart();
+      },
+      () => {
+        this.showAlert("Error fetching data from the backend. Please try again later.");
+      }
+    );
+
+      } else {
+        this.showAlert("No internet connection.");
+      }
+    });
+    
+
+
+    this.socket = new WebSocket('ws://localhost:5000/ws');
+    console.log('WebSocket created');
+    this.socket.onopen = (event) => {
+      console.log('WebSocket connected');
+    };
+
+    this.socket.onmessage = (event) => {
+      this.phoneService.checkInternetConnection().subscribe((connected:boolean) => {
+        this.isConnected = connected;
+        if (this.isConnected) {
+          console.log('Received message from server:', event.data);
+          this.phoneModelList=this.phoneService.getAllPhones2();
+          this.phoneModelList.subscribe(
+            (phoneslist: PhoneModel[]) => {
+              this.phoneService.updateServiceList(phoneslist);
+            },
+            () => {
+              this.showAlert("Error fetching data from the backend. Please try again later.");
+            }
+          );
+        }
+        else
+        {
+          this.showAlert("No internet connection.");
+        }
+    });
+    };
+
+    this.socket.onerror = (event) => {
+      console.error('WebSocket error:', event);
+    };
+  }
+
+  showAlert(message: string) {
+    window.alert(message);
   }
 
   AddNewPhone(){
@@ -76,8 +160,19 @@ export class PhoneComponent {
       this.crudform.value.color ?? '',
       this.crudform.value.phonememory ?? '',
       this.crudform.value.chosenphoto ?? '',
-    )
-    // this.showchartdata();
+    ).subscribe(() => {
+      this.phoneModelList=this.phoneService.getAllPhones2();
+      this.phoneModelList.subscribe(
+        (phoneslist: PhoneModel[]) => {
+          this.phoneService.updateServiceList(phoneslist);
+          this.showchartdata();
+        },
+        () => {
+          console.error('Error fetching phones:');
+        }
+      );
+    });
+    
   }
 
 
@@ -94,5 +189,18 @@ export class PhoneComponent {
 
   incIndex(){
     this.slicingindex++;
+  }
+
+  onPhoneModelDeleted(): void {
+    this.phoneModelList = this.phoneService.getAllPhones2();
+    this.phoneModelList.subscribe(
+      (phoneslist: PhoneModel[]) => {
+        this.phoneService.updateServiceList(phoneslist);
+        this.showchartdata();
+      },
+      () => {
+        console.error('Error fetching phones:');
+      }
+    );
   }
 }

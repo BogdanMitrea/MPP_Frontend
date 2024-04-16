@@ -1,4 +1,4 @@
-import { Component,Input, inject} from '@angular/core';
+import { Component,Input, inject, Output, EventEmitter } from '@angular/core';
 import { PhoneModel } from '../phone-model';
 import { CommonModule } from '@angular/common';
 import { PhoneService } from '../phone.service';
@@ -14,6 +14,8 @@ import { FormControl,FormGroup,ReactiveFormsModule } from '@angular/forms';
 })
 export class PhoneModelComponent {
   @Input() PhoneModel!:PhoneModel;
+  @Output() phoneModelDeleted: EventEmitter<number> = new EventEmitter<number>();
+
   phoneService= inject(PhoneService); 
   showForm: boolean = false;
   entryToUpdate:number=-1;
@@ -31,7 +33,13 @@ export class PhoneModelComponent {
     if(this.entryToUpdate===phoneModelId)
       this.entryToUpdate=-1;
     
-    this.phoneService.deletePhone(phoneModelId);
+    this.phoneService.deletePhone(phoneModelId).subscribe(() => {
+          this.phoneModelDeleted.emit();
+        },
+        () => {
+          console.error('Error fetching phones:');
+        }
+      );
   }
 
   updatePhone(phoneModelId:number) {
@@ -43,7 +51,13 @@ export class PhoneModelComponent {
       this.updateform.value.color ?? '',
       this.updateform.value.phonememory ?? '',
       this.updateform.value.chosenphoto ?? '',
-      );
+      ).subscribe(() => {
+        this.phoneModelDeleted.emit();
+      },
+      () => {
+        console.error('Error fetching phones:');
+      }
+    );
       this.showForm=!this.showForm;
   }
 
