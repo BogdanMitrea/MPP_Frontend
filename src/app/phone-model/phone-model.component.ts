@@ -27,6 +27,7 @@ export class PhoneModelComponent {
     color: new FormControl(''),
     phonememory: new FormControl(''),
     chosenphoto: new FormControl(''),
+    chosenstore: new FormControl(''),
   });
 
   deleteEntry(phoneModelId:number) {
@@ -51,6 +52,7 @@ export class PhoneModelComponent {
       this.updateform.value.color ?? '',
       this.updateform.value.phonememory ?? '',
       this.updateform.value.chosenphoto ?? '',
+      this.updateform.value.chosenstore ?? '',
       ).subscribe(() => {
         this.phoneModelDeleted.emit();
       },

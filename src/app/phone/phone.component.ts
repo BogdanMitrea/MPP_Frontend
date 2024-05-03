@@ -6,17 +6,20 @@ import { PhoneService } from '../phone.service';
 import Chart from 'chart.js/auto';
 import { FormControl,FormGroup,ReactiveFormsModule } from '@angular/forms';
 import { Observable, of } from 'rxjs';
+import { Store } from '../../store';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-phone',
   standalone: true,
-  imports: [PhoneModelComponent,CommonModule,ReactiveFormsModule],
+  imports: [PhoneModelComponent,CommonModule,ReactiveFormsModule,RouterModule],
   templateUrl: './phone.component.html',
   styleUrl: './phone.component.css'
 })
 export class PhoneComponent {
   phoneService: PhoneService = inject(PhoneService);
   alertrequest: Boolean = false;
+  showPhones : boolean = true;
   private socket: WebSocket;
   chart: any;
   ngOnInit() {
@@ -44,8 +47,9 @@ export class PhoneComponent {
     });
   }
   slicingindex:number=0;
-  // phoneModelList: PhoneModel[]=[];
+  localPhoneModelList: PhoneModel[]=[];
   phoneModelList: Observable<PhoneModel[]>=of([]);
+  storesList: Observable<Store[]>=of([]);
   showForm: boolean = false;
   crudform = new FormGroup({
     phonename: new FormControl(''),
@@ -54,7 +58,13 @@ export class PhoneComponent {
     color: new FormControl(''),
     phonememory: new FormControl(''),
     chosenphoto: new FormControl(''),
+    chosenstore: new FormControl(''),
   });
+
+  storeform = new FormGroup({
+    storename: new FormControl(''),
+  });
+
   sorttype:boolean = false;
   isConnected: boolean=true;
   toggleFormVisibility() {
@@ -77,38 +87,25 @@ export class PhoneComponent {
     // this.createChart();
     // this.phoneService.updateServiceList(phones);}).catch(error => {
     //   this.showAlert("Error fetching data from the backend. Please try again later.");
-
-    //   this.alertrequest = true;
-    //   });;
-
-
-    // this.phoneService.getAllPhones2().subscribe(
-    //   (phones: PhoneModel[]) => {
-    //     this.phoneModelList = phones;
-    //     this.createChart();
-    //     //this.phoneService.updateServiceList(phones);
-    //   },
-    //   () => {
-    //     console.error('Error fetching phones:');
-    //   }
-    // );
     this.phoneService.checkInternetConnection().subscribe((connected:boolean) => {
       this.isConnected = connected;
       if (this.isConnected) {
-        console.log('Internet connection is available.');
-        this.phoneModelList=this.phoneService.getAllPhones2();
-       this.phoneModelList.subscribe(
-        (phoneslist: PhoneModel[]) => {
-        this.phoneService.updateServiceList(phoneslist);
-        this.createChart();
-      },
-      () => {
-        this.showAlert("Error fetching data from the backend. Please try again later.");
-      }
-    );
+          console.log('Internet connection is available.');
+          this.phoneModelList=this.phoneService.getAllPhones2();
+          this.phoneModelList.subscribe(
+            (phoneslist: PhoneModel[]) => {
+              this.phoneService.updateServiceList(phoneslist);
+              this.createChart();
+            },
+            () => {
+              this.showAlert("Error fetching data from the backend. Please try again later.");
+            }
+          );
 
+          this.storesList=this.phoneService.getAllStores();
+          this.storesList.subscribe(()=>{});
       } else {
-        this.showAlert("No internet connection.");
+        // this.showAlert("No internet connection.");
       }
     });
     
@@ -152,27 +149,54 @@ export class PhoneComponent {
   }
 
   AddNewPhone(){
-    this.showForm = false;
-    this.phoneService.AddNewPhone(
-      this.crudform.value.phonename ?? '',
-      this.crudform.value.producer ?? '',
-      this.crudform.value.yearOfRelease ?? '',
-      this.crudform.value.color ?? '',
-      this.crudform.value.phonememory ?? '',
-      this.crudform.value.chosenphoto ?? '',
-    ).subscribe(() => {
-      this.phoneModelList=this.phoneService.getAllPhones2();
-      this.phoneModelList.subscribe(
-        (phoneslist: PhoneModel[]) => {
-          this.phoneService.updateServiceList(phoneslist);
-          this.showchartdata();
-        },
-        () => {
-          console.error('Error fetching phones:');
-        }
-      );
+    this.phoneService.checkInternetConnection().subscribe((connected:boolean) => {
+      this.isConnected = connected;
+      if (this.isConnected) {
+        console.log("connected");
+        this.showForm = false;
+        this.phoneService.AddNewPhone(
+          this.crudform.value.phonename ?? '',
+          this.crudform.value.producer ?? '',
+          this.crudform.value.yearOfRelease ?? '',
+          this.crudform.value.color ?? '',
+          this.crudform.value.phonememory ?? '',
+          this.crudform.value.chosenphoto ?? '',
+          this.crudform.value.chosenstore ?? '',
+        ).subscribe(() => {
+          this.phoneModelList=this.phoneService.getAllPhones2();
+          this.phoneModelList.subscribe(
+            (phoneslist: PhoneModel[]) => {
+              this.phoneService.updateServiceList(phoneslist);
+              this.showchartdata();
+            },
+            () => {
+              console.error('Error fetching phones:');
+            }
+          );
     });
-    
+      } else {
+        const newphone = {
+          id: 0,
+          name: this.crudform.value.phonename?? '',
+          producer: this.crudform.value.producer ?? '',
+          year: Number(this.crudform.value.yearOfRelease) ?? 2022,
+          color: this.crudform.value.color ?? '',
+          memory:Number(this.crudform.value.phonememory) ?? 0,
+          photo: this.crudform.value.chosenphoto ?? '',
+          store: 1
+        };
+        this.localPhoneModelList.push(newphone);
+        this.phoneService.updateServiceList(this.localPhoneModelList);
+      }
+    });
+  }
+  AddNewStore(){
+    this.showForm = false;
+    this.phoneService.AddNewStore(
+      this.storeform.value.storename ?? '',
+    ).subscribe(()=>{this.storesList=this.phoneService.getAllStores();
+      this.storesList.subscribe();
+    });
   }
 
 
@@ -202,5 +226,15 @@ export class PhoneComponent {
         console.error('Error fetching phones:');
       }
     );
+  }
+
+  toggleShowPhones(){
+    this.showPhones = !this.showPhones;
+  }
+
+  deleteStore(storeId:number) {
+    this.phoneService.deleteStore(storeId).subscribe(()=>{this.storesList=this.phoneService.getAllStores();
+      this.storesList.subscribe();
+    });
   }
 }

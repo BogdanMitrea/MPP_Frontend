@@ -6,4 +6,5 @@ export interface PhoneModel {
     color:string,
     memory:number,
     photo:string,
+    store:number,
 }

@@ -160,3 +160,52 @@
 .pagingbutton:hover{
     cursor:pointer;
 }
+
+.entitychoose{
+    display: flex;
+}
+
+.entitychoosebutton{
+    margin-left: 10px;
+    width: 200px;
+    height: 50px;
+    font-size: 16px;
+}
+
+.storedisplay{
+    width: auto;
+    height: 100px;
+    background-color: aliceblue;
+    border-radius: 10px;
+    font-size: 32px;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+.storecontrols{
+    display: flex;
+}
+.detailspage{
+    width: 80%;
+    align-self: center;
+    font-size: 16px;
+    background-color: lightblue;
+    color: white;
+}
+
+.deletestorebutton{
+    margin-top: 15px;
+    height: 20px;
+    width: 20%;
+    font-size: 16px;
+    background-color: lightcoral;
+    color: white;
+}
+
+.detailspage:hover{
+    cursor: pointer;
+}
+
+.deletestorebutton:hover{
+    cursor: pointer;
+}

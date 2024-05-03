@@ -26,6 +26,9 @@
                     <tr>
                         <td><label class="crudlabel" for="photoInput">Photo: </label></td>
                         <td><input id="photoInput" type="text" placeholder={{PhoneModel.photo}} formControlName="chosenphoto"></td></tr>
+                    <tr>
+                        <td><label class="crudlabel" for="storeInput">Store ID: </label></td>
+                        <td><input id="storeInput" type="text" placeholder={{PhoneModel.store}} formControlName="chosenstore"></td></tr>
                 </table>
                 <button type="submit" [disabled]="!updateform.valid" class="savebutton">Save Phone</button>
             </div>

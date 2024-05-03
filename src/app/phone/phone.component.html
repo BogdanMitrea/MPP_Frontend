@@ -1,6 +1,10 @@
-<h1>List of all the phones:</h1>
+<!-- <h1>List of all the phones:</h1> -->
+<div class="entitychoose">
+    <button type="submit" class="entitychoosebutton" (click)="toggleShowPhones()">Display Phones</button>
+    <button type="submit" class="entitychoosebutton" (click)="toggleShowPhones()">Display Stores</button>
+</div>
 <br>
-<div class="maindiv">
+<div *ngIf="showPhones" class="maindiv">
     <section class="Results">
         <div class="controlsdiv">
             <div>
@@ -12,7 +16,10 @@
         </div>
         <!-- <app-phone-model *ngFor="let phonemodel of phoneModelList" [PhoneModel]="phonemodel"></app-phone-model> -->
         <!-- <app-phone-model *ngFor="let phonemodel of phoneModelList.slice(slicingindex*5,5+slicingindex*5)" [PhoneModel]="phonemodel"></app-phone-model> -->
-        <ng-container *ngIf="(phoneModelList | async) as phones">
+        <ng-container *ngIf="!isConnected">
+            <app-phone-model *ngFor="let phonemodel of localPhoneModelList.slice(slicingindex * 5, 5 + slicingindex * 5)" [PhoneModel]="phonemodel" (phoneModelDeleted)="onPhoneModelDeleted()"></app-phone-model>
+        </ng-container>
+        <ng-container *ngIf="isConnected && (phoneModelList | async) as phones">
             <app-phone-model *ngFor="let phonemodel of phones.slice(slicingindex * 5, 5 + slicingindex * 5)" [PhoneModel]="phonemodel" (phoneModelDeleted)="onPhoneModelDeleted()"></app-phone-model>
         </ng-container>
         <div class="pagingdiv">
@@ -64,12 +71,15 @@
                         <tr>
                             <td><label class="crudlabel" for="photoInput">Photo: </label></td>
                             <td><input id="photoInput" type="text" formControlName="chosenphoto"></td></tr>
+                        <tr>
+                            <td><label class="crudlabel" for="storeInput">Store ID: </label></td>
+                            <td><input id="storeInput" type="text" formControlName="chosenstore"></td></tr>
                     </table>
                     <button type="submit" [disabled]="!crudform.valid" class="savebutton">Save Phone</button>
                 </div>
             </form>
         </div>
-        <div class="chartandbutton">
+        <!-- <div class="chartandbutton">
             <div class="chartbuttondiv">
                 <button type="submit" class="chartbutton" (click)="showchartdata()">
                     <img src="https://cdn-icons-png.flaticon.com/128/9311/9311549.png" alt="chart">
@@ -78,6 +88,47 @@
             <div class="chartdiv">
                 <canvas id="myChart"></canvas>
             </div>
+        </div> -->
+    </section>
+</div>
+
+
+
+<div *ngIf="!showPhones" class="maindiv">
+    <section class="Results">
+        <div class="controlsdiv">
+            <div>
+                <button type="submit" class="sortbutton" (click)="sortelements()">
+                    <img src="https://cdn-icons-png.flaticon.com/128/2223/2223723.png" alt="sort">
+                </button>
+            </div>
+        </div>
+        <ng-container *ngIf="(storesList | async) as stores">
+            <div class="storedisplay" *ngFor="let store of stores">
+                <p>{{store.name}}</p>
+                <div class="storecontrols">
+                    <p class="detailspage" [routerLink]="['/phonesbystore',store.id]">View Phones</p>
+                    <p class="deletestorebutton" (click)="deleteStore(store.id)">Delete</p>
+                </div>
+            </div>
+        </ng-container>
+    </section>
+    <section class="storeforms" >
+        <div class="managebuttons">
+            <button class="addbutton" (click)="toggleFormVisibility()">Add a new store</button>
+        </div>
+        <br>
+        <div *ngIf="showForm">
+            <form [formGroup]="storeform" (submit)="AddNewStore()">
+                <div class="storetable">
+                    <table>
+                        <tr>
+                        <td> <label class="crudlabel" for="storeNameInput">Store Name: </label></td>
+                        <td><input id="storeNameInput" type="text" formControlName="storename" required></td></tr>    
+                    </table>
+                    <button type="submit" [disabled]="!crudform.valid" class="savebutton">Save Store</button>
+                </div>
+            </form>
         </div>
     </section>
 </div>

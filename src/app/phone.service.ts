@@ -3,6 +3,7 @@ import { PhoneModel } from './phone-model';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Console } from 'console';
 import { Observable, catchError, map, of } from 'rxjs';
+import { Store } from '../store';
 
 
 @Injectable({
@@ -10,18 +11,15 @@ import { Observable, catchError, map, of } from 'rxjs';
 })
 export class PhoneService {
   private ipaddr='192.168.1.130'; 
-  private baseUrl = 'https://'+'localhost'+':7245/api/Phone';
+  private baseUrl = 'https://'+'localhost'+':7061/api/Phone';
+  private storeUrl = 'https://localhost:7061/api/Store';
   protected phoneModelsList: PhoneModel[] = [];
-  constructor(private http : HttpClient) {
-    
-  }
-
+  constructor(private http : HttpClient) {}
   // async getAllPhones(): Promise<PhoneModel[]>{
   //   console.log("Fetching");
   //   const data = await fetch(this.baseUrl);
   //   return await data.json() ?? [];
   // }
-
   checkInternetConnection(): Observable<boolean> {
     return this.http.get('https://corsproxy.io/?https://corsproxy.io').pipe(
       map(() => true),
@@ -35,16 +33,11 @@ export class PhoneService {
   getAllPhones2(): Observable<PhoneModel[]> {
     console.log("Fetching");
     var phones = this.http.get<PhoneModel[]>(this.baseUrl);
-    // phones.subscribe(
-    //   (phoneslist: PhoneModel[]) => {
-    //     console.log(phoneslist);
-    //     this.phoneModelsList = phoneslist;
-    //   },
-    //   () => {
-    //     console.error('Error fetching phones:');
-    //   }
-    // );
     return phones;
+  }
+
+  getAllStores(): Observable<Store[]> {
+    return this.http.get<Store[]>(this.storeUrl);
   }
 
   getPhonesList() : PhoneModel[]{
@@ -65,6 +58,11 @@ export class PhoneService {
     return await data.json() ?? {};
   }
 
+  async getStoreById(id:number): Promise<Store | undefined>{
+    const data=await fetch(`${this.storeUrl}/${id}`);
+    return await data.json() ?? {};
+  }
+
   getMaxId(): number {
     let maxId = 0;
     for (const element of this.phoneModelsList) {
@@ -75,7 +73,7 @@ export class PhoneService {
     return maxId;
   }
 
-  AddNewPhone(phonename:string,producer:string,yearOfRelease:string,color:string,phonememory:string,chosenphoto:string){
+  AddNewPhone(phonename:string,producer:string,yearOfRelease:string,color:string,phonememory:string,chosenphoto:string,chosenstore:string){
     const newphone = {
       id: 0,
       name: phonename,
@@ -83,42 +81,41 @@ export class PhoneService {
       year: Number(yearOfRelease),
       color: color,
       memory: Number(phonememory),
-      photo: chosenphoto
+      photo: chosenphoto,
+      store:Number(chosenstore)
     };
     
     return this.http.post(this.baseUrl, newphone)
+  }
+
+  AddNewStore(storename:string,){
+    const newstore = {
+      id: 0,
+      name: storename,
+    };
+    console.log(newstore);
+    return this.http.post(this.storeUrl, newstore);
   }
 
   deletePhone(phoneModelId:number){
     return this.http.delete<void>(`${this.baseUrl}/${phoneModelId}`);
   }
 
-  updatePhone(phoneModelId:number, phonename:string,producer:string,yearOfRelease:string,color:string,phonememory:string,chosenphoto:string){
-    // const index = this.phoneModelsList.findIndex(item => item.id === phoneModelId);
-    // if (index !== -1) {
+  deleteStore(storeId:number){
+    return this.http.delete<void>(`${this.storeUrl}/${storeId}`);
+  }
+
+  updatePhone(phoneModelId:number, phonename:string,producer:string,yearOfRelease:string,color:string,phonememory:string,chosenphoto:string,chosenstore:string){
       const updateData = {
         name: phonename,
         producer: producer,
         year: Number(yearOfRelease),
         color: color,
         memory: Number(phonememory),
-        photo: chosenphoto
+        photo: chosenphoto,
+        store:Number(chosenstore)
       };
       return this.http.put<any>(`${this.baseUrl}/${phoneModelId}`, updateData)
-    //   .subscribe(response => {
-    //     console.log('Phone Updated:', response);
-    //     this.phoneModelsList[index].name = phonename;
-    //     this.phoneModelsList[index].producer = producer;
-    //     this.phoneModelsList[index].year = Number(yearOfRelease);
-    //     this.phoneModelsList[index].color = color;
-    //     this.phoneModelsList[index].memory = Number(phonememory);
-    //     this.phoneModelsList[index].photo = chosenphoto;
-    //   }, error => {
-    //     console.error('Error updating the phone:', error);
-    //   });
-    // } else {
-    //     console.error('Phone model not found for update');
-    // }
   }
 
   sortelements(sorttype:boolean){
@@ -132,4 +129,15 @@ export class PhoneService {
   {
     this.phoneModelsList=phoneModelList;
   }
+
+  getServiceList() : PhoneModel[]
+  {
+    return this.phoneModelsList;
+  }
+
+  getPhonesByStore(id:number): Observable<PhoneModel[]>
+  {
+    return this.http.get<PhoneModel[]>(this.baseUrl+'/store/'+id);
+  }
+
 }

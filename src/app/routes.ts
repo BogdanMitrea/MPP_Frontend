@@ -1,6 +1,7 @@
 import { Routes } from "@angular/router";
 import { PhoneComponent } from "./phone/phone.component";
 import { DetailsComponent } from "./details/details.component";
+import { PhonesbystoreComponent } from "./phonesbystore/phonesbystore.component";
 
 const routeConfig: Routes=[
     {
@@ -12,6 +13,11 @@ const routeConfig: Routes=[
         path: 'details/:id',
         component: DetailsComponent,
         title: 'Details Page'
+    },
+    {
+        path: 'phonesbystore/:id',
+        component: PhonesbystoreComponent,
+        title: 'Store Page'
     }
 ]
 
