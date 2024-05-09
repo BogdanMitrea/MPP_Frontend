@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { PhoneService } from '../phone.service';
 import { RouterModule } from '@angular/router';
 import { FormControl,FormGroup,ReactiveFormsModule } from '@angular/forms';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-phone-model',
@@ -15,11 +16,12 @@ import { FormControl,FormGroup,ReactiveFormsModule } from '@angular/forms';
 export class PhoneModelComponent {
   @Input() PhoneModel!:PhoneModel;
   @Output() phoneModelDeleted: EventEmitter<number> = new EventEmitter<number>();
+  @Output() phoneDeletedLocally: EventEmitter<number> = new EventEmitter<number>();
 
   phoneService= inject(PhoneService); 
   showForm: boolean = false;
   entryToUpdate:number=-1;
-
+  isConnected: boolean=true;
   updateform = new FormGroup({
     newname: new FormControl(''),
     producer: new FormControl(''),
@@ -33,14 +35,24 @@ export class PhoneModelComponent {
   deleteEntry(phoneModelId:number) {
     if(this.entryToUpdate===phoneModelId)
       this.entryToUpdate=-1;
-    
-    this.phoneService.deletePhone(phoneModelId).subscribe(() => {
-          this.phoneModelDeleted.emit();
-        },
-        () => {
-          console.error('Error fetching phones:');
-        }
-      );
+    this.phoneService.checkInternetConnection().subscribe((connected:boolean) => {
+      this.isConnected = connected;
+      if (this.isConnected) {
+        this.phoneService.deletePhone(phoneModelId).subscribe(() => {
+              this.phoneModelDeleted.emit();
+            },
+            () => {
+              console.error('Error fetching phones:');
+            }
+          );
+      }
+      else
+      {
+        this.phoneDeletedLocally.emit(phoneModelId);
+        
+        this.phoneService.addPendingOperation('del',phoneModelId);
+      }
+    });
   }
 
   updatePhone(phoneModelId:number) {

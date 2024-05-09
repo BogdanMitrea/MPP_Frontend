@@ -16,41 +16,26 @@ import { RouterModule } from '@angular/router';
   templateUrl: './phone.component.html',
   styleUrl: './phone.component.css'
 })
+
 export class PhoneComponent {
   phoneService: PhoneService = inject(PhoneService);
-  alertrequest: Boolean = false;
-  showPhones : boolean = true;
   private socket: WebSocket;
   chart: any;
-  ngOnInit() {
-    
-  }
-  createChart() {
-    const ctx = document.getElementById('myChart') as HTMLCanvasElement;
-    this.chart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: this.phoneService.getAllPhonesNames(),
-        datasets: [{
-          label: 'Memory',
-          data: this.phoneService.getPhonesList().map(phone => phone.memory),
-          borderWidth: 1
-        }]
-      },
-      options: {
-        scales: {
-          y: {
-            beginAtZero: true
-          }
-        }
-      }
-    });
-  }
-  slicingindex:number=0;
+  alertrequest: Boolean = false;
+  
+  showPhones : boolean = true;
+  showForm: boolean = false;
+  sorttype:boolean = false;
+  isConnected: boolean=true;
+  
+  //for paging
+  totalPages: number = 0;
+  slicingindex: number = 0;
+
   localPhoneModelList: PhoneModel[]=[];
   phoneModelList: Observable<PhoneModel[]>=of([]);
   storesList: Observable<Store[]>=of([]);
-  showForm: boolean = false;
+  
   crudform = new FormGroup({
     phonename: new FormControl(''),
     producer: new FormControl(''),
@@ -65,19 +50,6 @@ export class PhoneComponent {
     storename: new FormControl(''),
   });
 
-  sorttype:boolean = false;
-  isConnected: boolean=true;
-  toggleFormVisibility() {
-    this.showForm = !this.showForm;
-  }
-
-  sortelements(){
-    this.sorttype=!this.sorttype;
-    this.phoneService.sortelements(this.sorttype);
-  }
-
-  
-
   constructor(){
     if (!navigator.onLine) {
       this.showAlert("No internet connection available.");
@@ -91,26 +63,22 @@ export class PhoneComponent {
       this.isConnected = connected;
       if (this.isConnected) {
           console.log('Internet connection is available.');
-          this.phoneModelList=this.phoneService.getAllPhones2();
-          this.phoneModelList.subscribe(
-            (phoneslist: PhoneModel[]) => {
-              this.phoneService.updateServiceList(phoneslist);
-              this.createChart();
-            },
-            () => {
-              this.showAlert("Error fetching data from the backend. Please try again later.");
-            }
-          );
-
-          this.storesList=this.phoneService.getAllStores();
-          this.storesList.subscribe(()=>{});
+          // this.phoneModelList=this.phoneService.getAllPhones2();
+          // this.phoneModelList.subscribe(
+          //   (phoneslist: PhoneModel[]) => {
+          //     this.phoneService.updateServiceList(phoneslist);
+          //     this.createChart();
+          //   },
+          //   () => {
+          //     this.showAlert("Error fetching data from the backend. Please try again later.");
+          //   }
+          // );
+          this.fetchList();
       } else {
         // this.showAlert("No internet connection.");
       }
     });
     
-
-
     this.socket = new WebSocket('ws://localhost:5000/ws');
     console.log('WebSocket created');
     this.socket.onopen = (event) => {
@@ -122,18 +90,9 @@ export class PhoneComponent {
         this.isConnected = connected;
         if (this.isConnected) {
           console.log('Received message from server:', event.data);
-          this.phoneModelList=this.phoneService.getAllPhones2();
-          this.phoneModelList.subscribe(
-            (phoneslist: PhoneModel[]) => {
-              this.phoneService.updateServiceList(phoneslist);
-            },
-            () => {
-              this.showAlert("Error fetching data from the backend. Please try again later.");
-            }
-          );
+          this.fetchList();
         }
-        else
-        {
+        else{
           this.showAlert("No internet connection.");
         }
     });
@@ -144,6 +103,52 @@ export class PhoneComponent {
     };
   }
 
+  ngOnInit() {}
+
+  fetchList(){
+    this.phoneService.getPagedPhones(this.slicingindex + 1)
+    .subscribe((response:any)  => {
+      this.phoneModelList = of(response.data);
+      this.totalPages = response.totalPages;
+    });
+    this.phoneService.executePendingOperations();
+    this.storesList=this.phoneService.getAllStores();
+    this.storesList.subscribe(()=>{});
+  }
+
+  // createChart() {
+  //   const ctx = document.getElementById('myChart') as HTMLCanvasElement;
+  //   this.chart = new Chart(ctx, {
+  //     type: 'bar',
+  //     data: {
+  //       labels: this.phoneService.getAllPhonesNames(),
+  //       datasets: [{
+  //         label: 'Memory',
+  //         data: this.phoneService.getPhonesList().map(phone => phone.memory),
+  //         borderWidth: 1
+  //       }]
+  //     },
+  //     options: {
+  //       scales: {
+  //         y: {
+  //           beginAtZero: true
+  //         }
+  //       }
+  //     }
+  //   });
+  // }
+  
+  toggleFormVisibility() {
+    this.showForm = !this.showForm;
+  }
+
+  sortelements(){
+    this.sorttype=!this.sorttype;
+    this.phoneService.sortelements(this.sorttype);
+  }
+
+  
+
   showAlert(message: string) {
     window.alert(message);
   }
@@ -152,44 +157,34 @@ export class PhoneComponent {
     this.phoneService.checkInternetConnection().subscribe((connected:boolean) => {
       this.isConnected = connected;
       if (this.isConnected) {
-        console.log("connected");
         this.showForm = false;
         this.phoneService.AddNewPhone(
-          this.crudform.value.phonename ?? '',
-          this.crudform.value.producer ?? '',
-          this.crudform.value.yearOfRelease ?? '',
-          this.crudform.value.color ?? '',
-          this.crudform.value.phonememory ?? '',
-          this.crudform.value.chosenphoto ?? '',
-          this.crudform.value.chosenstore ?? '',
-        ).subscribe(() => {
-          this.phoneModelList=this.phoneService.getAllPhones2();
-          this.phoneModelList.subscribe(
-            (phoneslist: PhoneModel[]) => {
-              this.phoneService.updateServiceList(phoneslist);
-              this.showchartdata();
-            },
-            () => {
-              console.error('Error fetching phones:');
-            }
-          );
-    });
+          this.crudform.value.phonename ?? '',this.crudform.value.producer ?? '',this.crudform.value.yearOfRelease ?? '',this.crudform.value.color ?? '',
+          this.crudform.value.phonememory ?? '',this.crudform.value.chosenphoto ?? '',this.crudform.value.chosenstore ?? '',
+          ).subscribe(() => {
+          this.fetchList();
+        });
       } else {
         const newphone = {
-          id: 0,
-          name: this.crudform.value.phonename?? '',
-          producer: this.crudform.value.producer ?? '',
-          year: Number(this.crudform.value.yearOfRelease) ?? 2022,
-          color: this.crudform.value.color ?? '',
-          memory:Number(this.crudform.value.phonememory) ?? 0,
-          photo: this.crudform.value.chosenphoto ?? '',
-          store: 1
+          id: this.localPhoneModelList.length,
+          name: this.crudform.value.phonename?? '',producer: this.crudform.value.producer ?? '',year: Number(this.crudform.value.yearOfRelease) ?? 2022,color: this.crudform.value.color ?? '',
+          memory:Number(this.crudform.value.phonememory) ?? 0,photo: this.crudform.value.chosenphoto ?? '',store: Number(this.crudform.value.chosenstore) ?? 0, 
         };
         this.localPhoneModelList.push(newphone);
-        this.phoneService.updateServiceList(this.localPhoneModelList);
+        this.phoneService.addPendingOperation('add',{
+          id: this.localPhoneModelList.length,
+          name: this.crudform.value.phonename?? '',
+          producer: this.crudform.value.producer ?? '',
+          year: Number(this.crudform.value.yearOfRelease),
+          color: this.crudform.value.color ?? '',
+          memory: Number(this.crudform.value.phonememory),
+          photo: this.crudform.value.chosenphoto ?? '',
+          store: Number(this.crudform.value.chosenstore) ?? 0,
+        })
       }
     });
   }
+
   AddNewStore(){
     this.showForm = false;
     this.phoneService.AddNewStore(
@@ -199,33 +194,30 @@ export class PhoneComponent {
     });
   }
 
-
-  showchartdata(){
-    this.chart.destroy();
-    this.createChart();
-    this.chart.update();
-  }
+  // showchartdata(){
+  //   this.chart.destroy();
+  //   this.createChart();
+  //   this.chart.update();
+  // }
 
 
   decIndex(){
     this.slicingindex--;
+    this.fetchList();
   }
 
   incIndex(){
     this.slicingindex++;
+    this.fetchList();
   }
 
   onPhoneModelDeleted(): void {
-    this.phoneModelList = this.phoneService.getAllPhones2();
-    this.phoneModelList.subscribe(
-      (phoneslist: PhoneModel[]) => {
-        this.phoneService.updateServiceList(phoneslist);
-        this.showchartdata();
-      },
-      () => {
-        console.error('Error fetching phones:');
-      }
-    );
+    this.fetchList();
+  }
+  
+  onPhoneDeletedLocally(id:number):void{
+    console.log("Delete");
+    this.localPhoneModelList.splice(id,1);
   }
 
   toggleShowPhones(){

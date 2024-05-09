@@ -4,7 +4,13 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Console } from 'console';
 import { Observable, catchError, map, of } from 'rxjs';
 import { Store } from '../store';
+import { PhoneComponent } from './phone/phone.component';
 
+
+interface Pair {
+  key: string;
+  value: any;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +19,10 @@ export class PhoneService {
   private ipaddr='192.168.1.130'; 
   private baseUrl = 'https://'+'localhost'+':7061/api/Phone';
   private storeUrl = 'https://localhost:7061/api/Store';
-  protected phoneModelsList: PhoneModel[] = [];
+  private pageSize = 5;
+  // protected phoneModelsList: PhoneModel[] = [];
+  private pendingoperations: Pair[] = []; 
+
   constructor(private http : HttpClient) {}
   // async getAllPhones(): Promise<PhoneModel[]>{
   //   console.log("Fetching");
@@ -31,8 +40,11 @@ export class PhoneService {
   }
   
   getAllPhones2(): Observable<PhoneModel[]> {
-    console.log("Fetching");
-    var phones = this.http.get<PhoneModel[]>(this.baseUrl);
+    return this.http.get<PhoneModel[]>(this.baseUrl);
+  }
+
+  getPagedPhones(pagenr: number){
+    var phones = this.http.get<PhoneModel[]>(`${this.baseUrl}/${this.pageSize}/${pagenr}`);
     return phones;
   }
 
@@ -40,18 +52,18 @@ export class PhoneService {
     return this.http.get<Store[]>(this.storeUrl);
   }
 
-  getPhonesList() : PhoneModel[]{
-    return this.phoneModelsList;
-  }
+  // getPhonesList() : PhoneModel[]{
+  //   return this.phoneModelsList;
+  // }
 
   getURL()
   {
     return this.baseUrl;
   }
 
-  getAllPhonesNames(): String[] {
-    return this.phoneModelsList.map(phone => phone.name);
-  }
+  // getAllPhonesNames(): String[] {
+  //   return this.phoneModelsList.map(phone => phone.name);
+  // }
 
   async getPhoneById(id:number): Promise<PhoneModel | undefined>{
     const data=await fetch(`${this.baseUrl}/${id}`);
@@ -63,15 +75,15 @@ export class PhoneService {
     return await data.json() ?? {};
   }
 
-  getMaxId(): number {
-    let maxId = 0;
-    for (const element of this.phoneModelsList) {
-      if (element.id > maxId) {
-        maxId = element.id;
-      }
-    }
-    return maxId;
-  }
+  // getMaxId(): number {
+  //   let maxId = 0;
+  //   for (const element of this.phoneModelsList) {
+  //     if (element.id > maxId) {
+  //       maxId = element.id;
+  //     }
+  //   }
+  //   return maxId;
+  // }
 
   AddNewPhone(phonename:string,producer:string,yearOfRelease:string,color:string,phonememory:string,chosenphoto:string,chosenstore:string){
     const newphone = {
@@ -119,25 +131,55 @@ export class PhoneService {
   }
 
   sortelements(sorttype:boolean){
-    if(sorttype)
-      this.phoneModelsList=this.phoneModelsList.sort((a,b)=> b.name.localeCompare(a.name));
-    else
-    this.phoneModelsList=this.phoneModelsList.sort((a,b)=>  a.name.localeCompare(b.name));
+    // if(sorttype)
+    //   this.phoneModelsList=this.phoneModelsList.sort((a,b)=> b.name.localeCompare(a.name));
+    // else
+    // this.phoneModelsList=this.phoneModelsList.sort((a,b)=>  a.name.localeCompare(b.name));
   }
 
-  updateServiceList(phoneModelList:PhoneModel[])
-  {
-    this.phoneModelsList=phoneModelList;
-  }
+  // updateServiceList(phoneModelList:PhoneModel[])
+  // {
+  //   this.phoneModelsList=phoneModelList;
+  // }
 
-  getServiceList() : PhoneModel[]
-  {
-    return this.phoneModelsList;
-  }
+  // getServiceList() : PhoneModel[]
+  // {
+  //   return this.phoneModelsList;
+  // }
 
   getPhonesByStore(id:number): Observable<PhoneModel[]>
   {
     return this.http.get<PhoneModel[]>(this.baseUrl+'/store/'+id);
   }
 
+
+  addPendingOperation(opname: string, val: any)
+  {
+    this.pendingoperations.push({key: opname,value:val});
+  }
+
+  executePendingOperations()
+  {
+    var listToSync: PhoneModel[]=[];
+    while(this.pendingoperations.length>0)
+    {
+      var op=this.pendingoperations.shift();
+      console.log(op);
+      if(op?.key=='add')
+      {
+        listToSync.push(op.value);
+      }
+      if(op?.key=='del')
+      {
+        const index=listToSync.findIndex(elem => elem.id===Number(op?.value));
+        listToSync.splice(index+1,1);
+      }
+    }
+    while(listToSync.length>0)
+    {
+      var newelem=listToSync.shift();
+      if(newelem)
+        this.http.post(this.baseUrl, newelem).subscribe();
+    }
+  }
 }

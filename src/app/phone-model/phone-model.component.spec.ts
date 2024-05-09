@@ -18,7 +18,7 @@ describe('PhoneModelComponent', () => {
     year:22,
     color:"black",
     photo:"none",
-    
+    store:1
   };
 
   beforeEach(async () => {
