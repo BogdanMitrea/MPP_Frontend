@@ -1,3 +1,15 @@
+<nav class="navbar">
+    <div class="navbar-left">
+        <span class="menu-icon" [routerLink]="['/home']">&#x2302;</span>
+    </div>
+    <div class="navbar-center">
+        <h1>Phones Stores</h1>
+    </div>
+    <div class="navbar-right">
+      <a [routerLink]="['']">Logout</a>
+  </div>
+</nav>
+
 <h1>Store id: {{store?.id}}</h1>
 <section class="tehnical-details">
     <p>Name: {{store?.name}}</p>

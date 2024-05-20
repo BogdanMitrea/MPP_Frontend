@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Store } from '../../store';
 import { PhoneService } from '../phone.service';
 import { Observable, of } from 'rxjs';
@@ -10,7 +10,7 @@ import { PhoneModelComponent } from '../phone-model/phone-model.component';
 @Component({
   selector: 'app-phonesbystore',
   standalone: true,
-  imports: [PhoneModelComponent,CommonModule],
+  imports: [PhoneModelComponent,CommonModule,RouterLink],
   templateUrl: './phonesbystore.component.html',
   styleUrl: './phonesbystore.component.css'
 })

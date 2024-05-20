@@ -8,6 +8,8 @@ import { FormControl,FormGroup,ReactiveFormsModule } from '@angular/forms';
 import { Observable, of } from 'rxjs';
 import { Store } from '../../store';
 import { RouterModule } from '@angular/router';
+import { AuthService } from '../auth-service.service';
+import { JwtHelperService } from '@auth0/angular-jwt';
 
 @Component({
   selector: 'app-phone',
@@ -19,6 +21,7 @@ import { RouterModule } from '@angular/router';
 
 export class PhoneComponent {
   phoneService: PhoneService = inject(PhoneService);
+  authService: AuthService= inject(AuthService);
   private socket: WebSocket;
   chart: any;
   alertrequest: Boolean = false;
@@ -35,6 +38,8 @@ export class PhoneComponent {
   localPhoneModelList: PhoneModel[]=[];
   phoneModelList: Observable<PhoneModel[]>=of([]);
   storesList: Observable<Store[]>=of([]);
+
+  username: String='';
   
   crudform = new FormGroup({
     phonename: new FormControl(''),
@@ -50,7 +55,7 @@ export class PhoneComponent {
     storename: new FormControl(''),
   });
 
-  constructor(){
+  constructor(private jwtHelper: JwtHelperService){
     if (!navigator.onLine) {
       this.showAlert("No internet connection available.");
     }
@@ -80,7 +85,6 @@ export class PhoneComponent {
     });
     
     this.socket = new WebSocket('ws://localhost:5000/ws');
-    console.log('WebSocket created');
     this.socket.onopen = (event) => {
       console.log('WebSocket connected');
     };
@@ -101,6 +105,14 @@ export class PhoneComponent {
     this.socket.onerror = (event) => {
       console.error('WebSocket error:', event);
     };
+
+    const token = localStorage.getItem('jwt_token');
+    if (token) {
+      const decodedToken = this.jwtHelper.decodeToken(token);
+      this.username = decodedToken.sub;
+      this.phoneService.setToken(token);
+    }
+  
   }
 
   ngOnInit() {}

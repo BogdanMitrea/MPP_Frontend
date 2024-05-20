@@ -1,7 +1,17 @@
-<!-- <h1>List of all the phones:</h1> -->
+<nav class="navbar">
+    <div class="navbar-left">
+        <span class="menu-icon" [routerLink]="['/home']">&#x2302;</span>
+    </div>
+    <div class="navbar-center">
+        <h1>Hello {{this.username}} | Welcome to Phones Stores</h1>
+    </div>
+    <div class="navbar-right">
+      <a [routerLink]="['']" (click)="this.authService.logout()">Logout</a>
+  </div>
+</nav>
 <div class="entitychoose">
-    <button type="submit" class="entitychoosebutton" (click)="toggleShowPhones()">Display Phones</button>
-    <button type="submit" class="entitychoosebutton" (click)="toggleShowPhones()">Display Stores</button>
+    <button type="submit" class="entitychoosebutton" (click)="toggleShowPhones()" [disabled]="showPhones">Display Phones</button>
+    <button type="submit" class="entitychoosebutton" (click)="toggleShowPhones()" [disabled]="!showPhones">Display Stores</button>
 </div>
 <br>
 <div *ngIf="showPhones" class="maindiv">

@@ -1,0 +1,32 @@
+
+<div class="auth-container">
+    <h2>Login</h2>
+    <form *ngIf="!showRegisterForm" (ngSubmit)="login()">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" [(ngModel)]="loginForm.username" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password </label>
+            <input type="password" id="password" name="password" [(ngModel)]="loginForm.password" required>
+        </div>
+        <button type="submit">Login</button>
+        <p (click)="toggleForm()">Don't have an account? Register here.</p>
+    </form>
+    <form *ngIf="showRegisterForm" (ngSubmit)="register()">
+        <div class="form-group">
+            <label for="registerMail">Email </label>
+            <input type="text" id="registerMail" name="registerMail" [(ngModel)]="registerForm.usermail" required>
+        </div>
+        <div class="form-group">
+            <label for="registerUsername">Username</label>
+            <input type="text" id="registerUsername" name="registerUsername" [(ngModel)]="registerForm.username" required>
+        </div>
+        <div class="form-group">
+            <label for="registerPassword">Password </label>
+            <input type="password" id="registerPassword" name="registerPassword" [(ngModel)]="registerForm.password" required>
+        </div>
+        <button type="submit">Register</button>
+        <p (click)="toggleForm()">Already have an account? Login here.</p>
+    </form>
+</div>

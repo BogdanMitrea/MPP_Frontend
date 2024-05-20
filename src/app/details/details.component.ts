@@ -1,12 +1,12 @@
 import { Component, inject } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { PhoneService } from '../phone.service';
 import { PhoneModel } from '../phone-model';
 
 @Component({
   selector: 'app-details',
   standalone: true,
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './details.component.html',
   styleUrl: './details.component.css'
 })

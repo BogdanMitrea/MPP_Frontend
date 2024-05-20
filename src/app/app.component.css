@@ -1,7 +1,6 @@
-.Phones{
-    height: 50px;
-}
-
 main{
     background-color: azure;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }

@@ -1,6 +1,6 @@
 import { Injectable,inject } from '@angular/core';
 import { PhoneModel } from './phone-model';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Console } from 'console';
 import { Observable, catchError, map, of } from 'rxjs';
 import { Store } from '../store';
@@ -21,7 +21,8 @@ export class PhoneService {
   private storeUrl = 'https://localhost:7061/api/Store';
   private pageSize = 5;
   // protected phoneModelsList: PhoneModel[] = [];
-  private pendingoperations: Pair[] = []; 
+  private pendingoperations: Pair[] = [];
+  token : any=null; 
 
   constructor(private http : HttpClient) {}
   // async getAllPhones(): Promise<PhoneModel[]>{
@@ -40,11 +41,17 @@ export class PhoneService {
   }
   
   getAllPhones2(): Observable<PhoneModel[]> {
-    return this.http.get<PhoneModel[]>(this.baseUrl);
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.token}`
+    });
+    return this.http.get<PhoneModel[]>(this.baseUrl,{headers:headers});
   }
 
   getPagedPhones(pagenr: number){
-    var phones = this.http.get<PhoneModel[]>(`${this.baseUrl}/${this.pageSize}/${pagenr}`);
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.token}`
+    });
+    var phones = this.http.get<PhoneModel[]>(`${this.baseUrl}/${this.pageSize}/${pagenr}`,{headers:headers});
     return phones;
   }
 
@@ -66,6 +73,9 @@ export class PhoneService {
   // }
 
   async getPhoneById(id:number): Promise<PhoneModel | undefined>{
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.token}`
+    });
     const data=await fetch(`${this.baseUrl}/${id}`);
     return await data.json() ?? {};
   }
@@ -86,6 +96,9 @@ export class PhoneService {
   // }
 
   AddNewPhone(phonename:string,producer:string,yearOfRelease:string,color:string,phonememory:string,chosenphoto:string,chosenstore:string){
+    const headers = new HttpHeaders({
+      "Authorization": `Bearer ${localStorage.getItem('jwt_token')}`
+    });
     const newphone = {
       id: 0,
       name: phonename,
@@ -97,27 +110,39 @@ export class PhoneService {
       store:Number(chosenstore)
     };
     
-    return this.http.post(this.baseUrl, newphone)
+    return this.http.post(this.baseUrl, newphone,{headers:headers})
   }
 
   AddNewStore(storename:string,){
+    const headers = new HttpHeaders({
+      "Authorization": `Bearer ${localStorage.getItem('jwt_token')}`
+    });
     const newstore = {
       id: 0,
       name: storename,
     };
     console.log(newstore);
-    return this.http.post(this.storeUrl, newstore);
+    return this.http.post(this.storeUrl, newstore,{headers:headers});
   }
 
   deletePhone(phoneModelId:number){
-    return this.http.delete<void>(`${this.baseUrl}/${phoneModelId}`);
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.token}`
+    });
+    return this.http.delete<void>(`${this.baseUrl}/${phoneModelId}`,{headers:headers});
   }
 
   deleteStore(storeId:number){
-    return this.http.delete<void>(`${this.storeUrl}/${storeId}`);
+    const headers = new HttpHeaders({
+      "Authorization": `Bearer ${localStorage.getItem('jwt_token')}`
+    });
+    return this.http.delete<void>(`${this.storeUrl}/${storeId}`,{headers:headers});
   }
 
   updatePhone(phoneModelId:number, phonename:string,producer:string,yearOfRelease:string,color:string,phonememory:string,chosenphoto:string,chosenstore:string){
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.token}`
+    });
       const updateData = {
         name: phonename,
         producer: producer,
@@ -127,7 +152,7 @@ export class PhoneService {
         photo: chosenphoto,
         store:Number(chosenstore)
       };
-      return this.http.put<any>(`${this.baseUrl}/${phoneModelId}`, updateData)
+      return this.http.put<any>(`${this.baseUrl}/${phoneModelId}`, updateData,{headers:headers})
   }
 
   sortelements(sorttype:boolean){
@@ -181,5 +206,10 @@ export class PhoneService {
       if(newelem)
         this.http.post(this.baseUrl, newelem).subscribe();
     }
+  }
+
+  setToken(token:any)
+  {
+    this.token=token;
   }
 }
