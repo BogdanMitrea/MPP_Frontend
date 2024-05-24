@@ -20,7 +20,7 @@ export class AuthService {
       password:password,
       email:''
     };
-    return this.http.post<any>('https://localhost:7061/api/Auth/login', newuser)
+    return this.http.post<any>('https://mppbackend-production-bec6.up.railway.app/api/Auth/login', newuser)
       .pipe(
         tap(response => {
           const token = response.token;
@@ -35,7 +35,7 @@ export class AuthService {
       password:password,
       email:usermail
     };
-    return this.http.post<any>('https://localhost:7061/api/Auth/register', newuser);    
+    return this.http.post<any>('https://mppbackend-production-bec6.up.railway.app/api/Auth/register', newuser);    
   }
 
   logout() {

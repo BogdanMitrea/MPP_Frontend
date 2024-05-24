@@ -17,8 +17,8 @@ interface Pair {
 })
 export class PhoneService {
   private ipaddr='192.168.1.130'; 
-  private baseUrl = 'https://'+'localhost'+':7061/api/Phone';
-  private storeUrl = 'https://localhost:7061/api/Store';
+  private baseUrl = 'https://mppbackend-production-bec6.up.railway.app/api/Phone';
+  private storeUrl = 'https://mppbackend-production-bec6.up.railway.app/api/Store';
   private pageSize = 5;
   // protected phoneModelsList: PhoneModel[] = [];
   private pendingoperations: Pair[] = [];
